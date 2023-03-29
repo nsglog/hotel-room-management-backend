@@ -6,6 +6,5 @@ import lombok.Setter;
 @Getter
 @Setter
 public class ChangeUserEmailRequestDto {
-    private long booking_id;
     private String email;
 }

@@ -8,6 +8,5 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 public class CancelBookingRequestDto {
-    private Long booking_id;
     private LocalDateTime beginCancellationTime;
 }

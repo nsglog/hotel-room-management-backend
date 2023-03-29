@@ -1,6 +1,8 @@
 package com.scalerassignment.hotelroommanagement.repository;
 
-import com.scalerassignment.hotelroommanagement.model.*;
+import com.scalerassignment.hotelroommanagement.model.BookedRoomStatus;
+import com.scalerassignment.hotelroommanagement.model.Booking;
+import com.scalerassignment.hotelroommanagement.model.Room;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -8,7 +10,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.Map;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 @Repository
@@ -16,17 +18,17 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     Optional<Booking> findById (long id);
 
-    @Query(value = "select room from " +
-            "booked_room inner join booking on booking.id = booked_room.booking_id where " +
-            "start_time < ?2 and end_time > ?1 and booked_room.booking_status = ?3",
+    @Query(value = "select booked_room.room_id from " +
+            "booked_room inner join booking on booked_room.booking_id = booking.id where " +
+            "booking.start_time < ?2 and booking.end_time > ?1 and booked_room.booked_room_status = 'ACTIVE'",
     nativeQuery = true)
-    Set<Room> getAllBookedRooms (LocalDateTime start, LocalDateTime end, BookedRoomStatus bookedRoomStatus);
+    Set<Long> getAllBookedRooms (LocalDateTime start, LocalDateTime end);
 
-    @Query(value = "select booked_room from " +
-            "room inner join booked_room on room.id = booked_room.room_id inner join booking on booking.id = booked_room.booking_id where " +
-            "booking.id = ?1",
+    @Query(value = "select booked_room.room_id from " +
+            "booked_room inner join booking on booking.id = booked_room.booking_id where " +
+            "booking.id = ?1 and booked_room.booked_room_status = 'ACTIVE'",
             nativeQuery = true)
-    Set<BookedRoom> getRoomTypeByBookingId (long booking_id);
+    List<Long> getRoomByBookingId (long booking_id);
 
 
 
@@ -37,4 +39,37 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     void changeGuestEmail(long bookingId, String email);
 
 
+    @Transactional
+    @Modifying(clearAutomatically = true)
+    @Query(value ="update booked_room set booked_room.booked_room_status = 'INACTIVE', booked_room.cancellation_time = ?1 " +
+            "where booked_room.booking_id = ?2", nativeQuery = true)
+    void cancelRoomsByBookingId(LocalDateTime beginCancellationTime, long bookingId);
+
+    @Query(value = "select cancellation_time from booked_room where booking_id = ?1 and room_id = ?2", nativeQuery = true)
+    LocalDateTime getCancellationTime(long booking_id, long room_id);
+
+    @Query(value = "select booked_room.room_id from booked_room inner join booking on booked_room.booking_id = booking.id where " +
+            "booking.id = ?1 and booked_room.booked_room_status = 'INACTIVE'", nativeQuery = true)
+    List<Long> findRoomsByBookedRoomStatus(long bookingId);
+
+    @Transactional
+    @Modifying(clearAutomatically = true)
+    @Query(value = "update booked_room set booked_room.booked_room_status = 'COMPLETED' where booked_room.booking_id = ?1",
+    nativeQuery = true)
+    void completeBookingRoomsByBookingId(long bookingId);
+
+    @Transactional
+    @Modifying(clearAutomatically = true)
+    @Query(value = "update booked_room set booked_room.cancellation_time = ?3, booked_room.booked_room_status = 'INACTIVE' " +
+            "where booking_id = ?1 and room_id = ?2 ", nativeQuery = true)
+    void cancelRoomByBookingId(long bookingId, long roomId, LocalDateTime beginCancellationTime);
+
+    @Transactional
+    @Modifying(clearAutomatically = true)
+    @Query(value = "update booking set total_price = ?1, booking_status = 'CANCELLED' where id = ?2", nativeQuery = true)
+    void updateBookingData(double totalPrice, long booking_id);
+
+
+    @Query(value = "select * from booking where booking_status = 'UPCOMING'", nativeQuery = true)
+    List<Booking> getAllBookings();
 }

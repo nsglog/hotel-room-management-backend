@@ -1,10 +1,12 @@
 package com.scalerassignment.hotelroommanagement.service;
 
 import com.scalerassignment.hotelroommanagement.model.*;
-import com.scalerassignment.hotelroommanagement.repository.BookedRoomRepository;
 import com.scalerassignment.hotelroommanagement.repository.BookingRepository;
+import com.scalerassignment.hotelroommanagement.repository.RoomRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 
 import static com.scalerassignment.hotelroommanagement.service.UtilityService.calculateRefund;
@@ -14,17 +16,21 @@ import static com.scalerassignment.hotelroommanagement.service.UtilityService.ca
 public class CheckOutService {
 
     private final BookingRepository bookingRepository;
-    private final BookedRoomRepository bookedRoomRepository;
-    public CheckOutService (BookingRepository bookingRepository, BookedRoomRepository bookedRoomRepository) {
+    private final RoomRepository roomRepository;
+    public CheckOutService (BookingRepository bookingRepository, RoomRepository roomRepository) {
         this.bookingRepository = bookingRepository;
-        this.bookedRoomRepository = bookedRoomRepository;
+        this.roomRepository = roomRepository;
     }
 
     public int checkOut (long booking_id) {
 
         Booking booking = bookingRepository.findById(booking_id).get();
+        System.out.println("upar query chal rahi hai 1");
         Set<Room> bookedRooms = booking.getRooms();
-        Set<BookedRoom> cancelledRooms = bookedRoomRepository.findRoomsByBookedRoomStatus(booking_id, BookedRoomStatus.INACTIVE);
+        List<Long> cancelledRoomIds = bookingRepository.findRoomsByBookedRoomStatus(booking_id);
+        System.out.println("upar query chal rahi hai 2");
+        List<Room> cancelledRooms = roomRepository.findRoomsById(cancelledRoomIds);
+        System.out.println("upar query chal rahi hai 3");
 
         int bookedRoomPrice = 0, cancelledRoomPrice = 0;
 
@@ -32,16 +38,18 @@ public class CheckOutService {
             bookedRoomPrice += calculateRoomPrice(room.getRoomType(), booking.getStart_time(),booking.getEnd_time());
         }
 
-        for (BookedRoom bookedRoom : cancelledRooms)    {
-            Room room = bookedRoom.getRoom();
-            int roomPrice = calculateRoomPrice(room.getRoomType(), booking.getStart_time(),booking.getEnd_time());
-            int refund = calculateRefund(bookedRoom.getCancellation_time(), booking.getStart_time(), roomPrice);
+        for (Room bookedRoom : cancelledRooms)    {
+            int roomPrice = calculateRoomPrice(bookedRoom.getRoomType(), booking.getStart_time(),booking.getEnd_time());
+            LocalDateTime cancellation_time;
+            cancellation_time = bookingRepository.getCancellationTime(booking_id, bookedRoom.getId());
+
+            int refund = calculateRefund(cancellation_time, booking.getStart_time(), roomPrice);
             cancelledRoomPrice += refund;
         }
 
         booking.setPrice((double) (bookedRoomPrice - cancelledRoomPrice));
         booking.setBookingStatus(Booking_status.COMPLETED);
-        bookedRoomRepository.completeBookingRoomsByBookingId(booking_id);
+        bookingRepository.completeBookingRoomsByBookingId(booking_id);
         bookingRepository.save(booking);
 
         return bookedRoomPrice - cancelledRoomPrice;
