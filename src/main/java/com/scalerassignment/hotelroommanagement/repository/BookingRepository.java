@@ -6,6 +6,7 @@ import com.scalerassignment.hotelroommanagement.model.Room;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -72,4 +73,15 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     @Query(value = "select * from booking where booking_status = 'UPCOMING'", nativeQuery = true)
     List<Booking> getAllBookings();
+
+    @Query(value = "select room_id from booked_room where " +
+            "booked_room_status = 'INACTIVE' and booking_id = ?1", nativeQuery = true)
+    List<Long> getCancelledRoomIdsOfCurrentBooking(long bookingId);
+
+    @Transactional
+    @Modifying(clearAutomatically = true)
+    @Query(value = "update booked_room set booked_room_status = 'ACTIVE', cancellation_time = NULL where " +
+            "booking_id = :booking_id and room_id in (:roomIds)", nativeQuery = true)
+    void updateExistingRoomInCurrentBooking (@Param(value = "booking_id") long booking_id, @Param(value = "roomIds") List<Long> roomIds);
+
 }

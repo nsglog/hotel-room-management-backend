@@ -13,7 +13,7 @@ import java.util.Set;
 @Getter
 @Setter
 public class CreateBookingRequestDto {
-    private Set<Room> rooms;
+    private List<Room> rooms;
     private String guest_email;
     private LocalDateTime start_time;
     private LocalDateTime end_time;

@@ -29,7 +29,7 @@ public class Booking {
     @JoinTable (name = "booked_room",
             joinColumns = @JoinColumn(name = "booking_id"),
             inverseJoinColumns = @JoinColumn(name = "room_id"))
-    private Set<Room> rooms;
+    private List<Room> rooms;
     @Column(name = "total_price")
     private Double price;
 

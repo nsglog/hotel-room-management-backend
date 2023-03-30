@@ -27,7 +27,7 @@ public class BookingService {
         this.bookingRepository = bookingRepository;
     }
 
-    public void createBooking (Set<Room> rooms, String guest_email, LocalDateTime start_time, LocalDateTime end_time) {
+    public void createBooking (List<Room> rooms, String guest_email, LocalDateTime start_time, LocalDateTime end_time) {
 
         Booking booking = new Booking();
         booking.setId(primary_key);

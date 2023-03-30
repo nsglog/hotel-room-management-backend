@@ -26,7 +26,7 @@ public class CheckOutService {
 
         Booking booking = bookingRepository.findById(booking_id).get();
         System.out.println("upar query chal rahi hai 1");
-        Set<Room> bookedRooms = booking.getRooms();
+        List<Room> bookedRooms = booking.getRooms();
         List<Long> cancelledRoomIds = bookingRepository.findRoomsByBookedRoomStatus(booking_id);
         System.out.println("upar query chal rahi hai 2");
         List<Room> cancelledRooms = roomRepository.findRoomsById(cancelledRoomIds);
