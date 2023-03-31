@@ -49,7 +49,7 @@ public class CheckOutService {
 
         booking.setPrice((double) (bookedRoomPrice - cancelledRoomPrice));
         booking.setBookingStatus(Booking_status.COMPLETED);
-        bookingRepository.completeBookingRoomsByBookingId(booking_id);
+        bookingRepository.completeBookingOfRoomsByBookingId(booking_id);
         bookingRepository.save(booking);
 
         return bookedRoomPrice - cancelledRoomPrice;
