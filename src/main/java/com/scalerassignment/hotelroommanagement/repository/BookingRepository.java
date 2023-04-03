@@ -1,8 +1,6 @@
 package com.scalerassignment.hotelroommanagement.repository;
 
-import com.scalerassignment.hotelroommanagement.model.BookedRoomStatus;
 import com.scalerassignment.hotelroommanagement.model.Booking;
-import com.scalerassignment.hotelroommanagement.model.Room;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -56,7 +54,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     @Transactional
     @Modifying(clearAutomatically = true)
     @Query(value = "update booked_room set booked_room.booked_room_status = 'COMPLETED' where booked_room.booking_id = ?1",
-    nativeQuery = true)
+            nativeQuery = true)
     void completeBookingOfRoomsByBookingId(long bookingId);
 
     @Transactional

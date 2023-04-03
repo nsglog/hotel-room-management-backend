@@ -46,6 +46,7 @@ public class BookingController {
 
     @DeleteMapping(value = "/{id}")
     public int removeExistingBooking (@PathVariable String id) {
+        System.out.println("delete initiated for booking reference"+id);
         return bookingService.cancelBooking( Long.parseLong(id),
                 LocalDateTime.now());
     }

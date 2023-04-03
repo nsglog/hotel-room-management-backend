@@ -24,6 +24,8 @@ public class CheckOutService {
 
     public int checkOut (long booking_id) {
 
+        System.out.println("executing this method");
+
         Booking booking = bookingRepository.findById(booking_id).get();
         System.out.println("upar query chal rahi hai 1");
         List<Room> bookedRooms = booking.getRooms();

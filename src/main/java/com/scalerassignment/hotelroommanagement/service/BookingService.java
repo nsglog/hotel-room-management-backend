@@ -43,11 +43,11 @@ public class BookingService {
     public int cancelBooking (long booking_id, LocalDateTime beginCancellationTime) {
 
         Booking booking = bookingRepository.findById(booking_id).get();
+        List<Long> roomIds = bookingRepository.getRoomByBookingId(booking_id);
+        List<Room> bookedRooms = roomRepository.findRoomsById(roomIds);
 
         bookingRepository.cancelRoomsByBookingId(beginCancellationTime, booking_id);
 
-        List<Long> roomIds = bookingRepository.getRoomByBookingId(booking_id);
-        List<Room> bookedRooms = roomRepository.findRoomsById(roomIds);
 
         int totalPrice = 0;
 
